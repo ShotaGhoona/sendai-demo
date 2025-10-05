@@ -1,54 +1,124 @@
 "use client"
 
-import { useState } from "react"
-import { Send } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Send, Clock, MessageSquare } from "lucide-react"
 import { Button } from "@/shared/ui-components/shadcnui/ui/button"
 import { Input } from "@/shared/ui-components/shadcnui/ui/input"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui-components/shadcnui/ui/card"
+import { Badge } from "@/shared/ui-components/shadcnui/ui/badge"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { v4 as uuidv4 } from "uuid"
+import { StorageManager, ChatHistory } from "../../shared/lib/storage-manager"
+import { QueryProcessor } from "../lib/query-processor"
 
-// サンプル履歴データ
-const sampleHistory = [
-  {
-    id: 1,
-    title: "ワンピースの9月の売上分析",
-    description: "ワンピース関連商品の9月売上データを集計・分析",
-    date: "10月5日"
-  },
-  {
-    id: 2,
-    title: "鬼滅の刃グッズの売上推移",
-    description: "鬼滅の刃関連商品の月別売上推移を確認",
-    date: "10月1日"
-  },
-  {
-    id: 3,
-    title: "フィギュア売上ランキング",
-    description: "フィギュアカテゴリの売上上位商品を分析",
-    date: "9月30日"
-  },
-  {
-    id: 4,
-    title: "店舗別売上比較",
-    description: "地域別・店舗別の売上実績を比較分析",
-    date: "9月29日"
-  },
-  {
-    id: 5,
-    title: "季節商品の売上傾向",
-    description: "夏季商品と秋季商品の売上傾向を分析",
-    date: "9月28日"
-  }
+// 入力例
+const exampleQueries = [
+  "ワンピースの9月の売り上げを教えて",
+  "鬼滅の刃のフィギュアの販売数量を知りたい",
+  "ポケモンの関東地域での売上ランキングを表示して",
+  "夏の限定商品の平均価格はいくら？",
+  "バンダイ製品の年間売上を集計して"
 ]
 
 export function AiAgentContainer() {
   const [inputValue, setInputValue] = useState("")
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
+  const queryProcessor = new QueryProcessor()
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (inputValue.trim()) {
-      console.log("送信:", inputValue)
-      setInputValue("")
+  useEffect(() => {
+    // 履歴を読み込み
+    const loadHistory = () => {
+      const history = StorageManager.getChatHistory()
+      setChatHistory(history.slice(0, 10)) // 最新10件のみ表示
     }
+    
+    loadHistory()
+    
+    // CSVデータの事前読み込み
+    queryProcessor.preloadData()
+  }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!inputValue.trim() || isLoading) return
+
+    setIsLoading(true)
+    
+    try {
+      // 新しいチャットIDを生成
+      const chatId = uuidv4()
+      
+      // 基本的なタイトルを生成（最初の30文字程度）
+      const title = inputValue.length > 30 
+        ? inputValue.substring(0, 30) + "..."
+        : inputValue
+      
+      // チャット履歴を作成
+      const newChat: ChatHistory = {
+        id: chatId,
+        title,
+        query: inputValue,
+        sql: '',
+        keywords: {},
+        preview: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: 'preview'
+      }
+      
+      // ローカルストレージに保存
+      StorageManager.saveChatHistory(newChat)
+      StorageManager.saveCurrentChat(chatId)
+      
+      // チャット詳細ページに遷移
+      router.push(`/analysis/ai-agent/${chatId}?prompt=${encodeURIComponent(inputValue)}`)
+    } catch (error) {
+      console.error('Failed to create chat:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleHistoryClick = (chatId: string) => {
+    StorageManager.saveCurrentChat(chatId)
+    router.push(`/analysis/ai-agent/${chatId}`)
+  }
+
+  const handleExampleClick = (example: string) => {
+    setInputValue(example)
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffDays = Math.floor(diffHours / 24)
+    
+    if (diffHours < 1) {
+      return '今＂'
+    } else if (diffHours < 24) {
+      return `${diffHours}時間前`
+    } else if (diffDays < 7) {
+      return `${diffDays}日前`
+    } else {
+      return date.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })
+    }
+  }
+
+  const getStatusBadge = (status: ChatHistory['status']) => {
+    const variants = {
+      preview: { variant: "outline" as const, text: "プレビュー" },
+      executing: { variant: "default" as const, text: "実行中" },
+      completed: { variant: "secondary" as const, text: "完了" },
+      error: { variant: "destructive" as const, text: "エラー" }
+    }
+    
+    const config = variants[status] || variants.preview
+    return <Badge variant={config.variant}>{config.text}</Badge>
   }
 
   return (
@@ -60,19 +130,63 @@ export function AiAgentContainer() {
 
       {/* メインコンテンツ */}
       <div className="flex flex-1 flex-col relative">
-        {/* 履歴エリア（下半分） */}
-        <div className="h-1/2 px-6 py-6 overflow-y-auto">
-          <div className="mx-auto max-w-5xl">
-            <div className="divide-y divide-border">
-              {sampleHistory.map((item) => (
-                <div key={item.id} className="cursor-pointer py-4 transition-colors hover:bg-muted/30">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-muted-foreground">{item.title}</h3>
-                    <span className="text-sm text-muted-foreground">{item.date}</span>
-                  </div>
-                </div>
-              ))}
+        {/* コンテンツエリア */}
+        <div className="flex-1 px-6 py-6 overflow-y-auto">
+          <div className="mx-auto max-w-5xl space-y-8">
+            
+            {/* 入力例セクション */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">分析例</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {exampleQueries.map((example, index) => (
+                  <Card 
+                    key={index} 
+                    className="cursor-pointer transition-colors hover:bg-muted/30"
+                    onClick={() => handleExampleClick(example)}
+                  >
+                    <CardContent className="p-4">
+                      <p className="text-sm text-muted-foreground">{example}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
+            
+            {/* 履歴セクション */}
+            {chatHistory.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-muted-foreground" />
+                  <h2 className="text-xl font-semibold">最近の分析</h2>
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  {chatHistory.map((item) => (
+                    <Card 
+                      key={item.id} 
+                      className="cursor-pointer transition-colors hover:bg-muted/30"
+                      onClick={() => handleHistoryClick(item.id)}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-1 flex-1">
+                            <CardTitle className="text-base font-medium">{item.title}</CardTitle>
+                            <CardDescription className="text-sm text-muted-foreground line-clamp-2">
+                              {item.query}
+                            </CardDescription>
+                          </div>
+                          <div className="flex flex-col items-end gap-2 ml-4">
+                            {getStatusBadge(item.status)}
+                            <span className="text-xs text-muted-foreground">
+                              {formatDate(item.updatedAt)}
+                            </span>
+                          </div>
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -99,7 +213,7 @@ export function AiAgentContainer() {
                 <Button 
                   type="submit" 
                   size="sm" 
-                  disabled={!inputValue.trim()}
+                  disabled={!inputValue.trim() || isLoading}
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full h-8 w-8 p-0"
                 >
                   <Send className="h-4 w-4" />
