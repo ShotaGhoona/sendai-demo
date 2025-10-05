@@ -168,3 +168,67 @@ if (userInput.includes('売上') && !hasTimeOrBrandFilter(conditions)) {
 2. **Phase 2**: ランキング、比較、統計分析
 3. **Phase 3**: 複雑な条件、エラーハンドリング
 4. **Phase 4**: 自然言語の揺らぎ対応、拡張機能
+
+## ディレクトリ構成
+
+```
+src/
+├── page-components/
+│   └── ai-agent/
+│       ├── home/
+│       │   ├── lib/
+│       │   │   ├── query-processor.ts          # メインのクエリ処理ロジック
+│       │   │   ├── keyword-extractor.ts        # キーワード抽出
+│       │   │   ├── sql-generator.ts            # SQL生成
+│       │   │   ├── csv-executor.ts             # CSV実行エンジン
+│       │   │   └── response-formatter.ts       # レスポンス整形
+│       │   ├── model/
+│       │   │   ├── query-types.ts              # 型定義
+│       │   │   ├── sql-patterns.ts             # SQLパターン定義
+│       │   │   └── keyword-patterns.ts         # キーワードパターン定義
+│       │   └── ui/
+│       │       └── aiAgentContainer.tsx
+│       └── detail/
+│           ├── lib/
+│           │   └── chat-manager.ts             # チャット履歴管理
+│           ├── model/
+│           │   └── chat-types.ts               # チャット関連型定義
+│           └── ui/
+│               └── aiAgentDetailContainer.tsx
+├── shared/
+│   ├── data/
+│   │   ├── sales_data.csv                      # 既存CSVデータ
+│   │   └── generate-csv.js                     # 既存生成スクリプト
+│   └── lib/
+│       ├── csv-parser.ts                       # CSV読み込み・パース
+│       ├── sql-engine.ts                       # ブラウザ用SQL実行エンジン
+│       └── data-cache.ts                       # データキャッシュ管理
+└── config/
+    └── query-config.ts                         # クエリ設定（キーワードパターン等）
+```
+
+### 主要コンポーネントの責務
+
+#### Core Processing Layer
+- **query-processor.ts**: メインエントリーポイント、全体の処理フロー制御
+- **keyword-extractor.ts**: ユーザー入力からキーワード抽出（「ワンピース」「9月」等）
+- **sql-generator.ts**: if文による動的SQL生成
+- **csv-executor.ts**: ブラウザでのCSV検索・実行
+- **response-formatter.ts**: クエリ結果の表示用データ整形
+
+#### Configuration Layer
+- **keyword-patterns.ts**: 戦略書で定義したキーワードパターン
+- **sql-patterns.ts**: SQL生成テンプレート
+- **query-types.ts**: TypeScript型定義
+- **query-config.ts**: 全体設定管理
+
+#### Infrastructure Layer
+- **csv-parser.ts**: CSVファイルの読み込み・パース
+- **sql-engine.ts**: ブラウザ用SQL実行エンジン（sql.jsまたは独自実装）
+- **data-cache.ts**: パフォーマンス向上のためのデータキャッシュ
+
+#### Application Layer
+- **chat-manager.ts**: チャット履歴の永続化・管理
+- **chat-types.ts**: チャット関連の型定義
+
+この構成により、関心の分離を明確にし、各フェーズでの段階的実装と将来の機能拡張に対応できる設計となっています。
