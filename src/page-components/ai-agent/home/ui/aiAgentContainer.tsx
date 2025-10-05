@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Send, Clock, MessageSquare } from "lucide-react"
+import { Send, Clock } from "lucide-react"
 import { Button } from "@/shared/ui-components/shadcnui/ui/button"
 import { Input } from "@/shared/ui-components/shadcnui/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui-components/shadcnui/ui/card"
@@ -39,7 +39,7 @@ export function AiAgentContainer() {
     
     // CSVデータの事前読み込み
     queryProcessor.preloadData()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

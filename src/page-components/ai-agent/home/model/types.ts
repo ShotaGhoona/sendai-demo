@@ -12,8 +12,8 @@ export interface ExtractedKeywords {
 
 export interface QueryResult {
   sql: string
-  preview: any[]
-  fullResults?: any[]
+  preview: Record<string, unknown>[]
+  fullResults?: Record<string, unknown>[]
   keywords: ExtractedKeywords
   error?: string
   totalRows?: number

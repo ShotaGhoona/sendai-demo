@@ -23,5 +23,20 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "src/shared/ui-components/shadcnui/ui/chart.tsx",
+    "src/shared/ui-components/shadcnui/ui/command.tsx",
+    "src/shared/ui-components/shadcnui/ui/calendar.tsx",
+    "src/shared/ui-components/shadcnui/ui/carousel.tsx",
+    "src/shared/ui-components/shadcnui/ui/drawer.tsx",
+    "src/shared/ui-components/shadcnui/ui/form.tsx",
+    "src/shared/ui-components/shadcnui/ui/input-otp.tsx",
+    "src/shared/ui-components/shadcnui/ui/menubar.tsx",
+    "src/shared/ui-components/shadcnui/ui/navigation-menu.tsx",
+    "src/shared/ui-components/shadcnui/ui/pagination.tsx",
+    "src/shared/ui-components/shadcnui/ui/resizable.tsx",
+    "src/shared/ui-components/shadcnui/ui/sheet.tsx",
+    "src/shared/ui-components/shadcnui/ui/sonner.tsx"
+  ]
 }

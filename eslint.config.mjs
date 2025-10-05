@@ -18,6 +18,8 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "src/shared/data/generate-csv.js",
+      "src/shared/ui-components/shadcnui/ui/chart.tsx",
     ],
   },
 ];

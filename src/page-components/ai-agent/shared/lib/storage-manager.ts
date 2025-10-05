@@ -1,11 +1,13 @@
+import { ExtractedKeywords } from '../../home/model/types'
+
 export interface ChatHistory {
   id: string
   title: string
   query: string
   sql: string
-  keywords: any
-  preview: any[]
-  fullResults?: any[]
+  keywords: ExtractedKeywords
+  preview: Record<string, unknown>[]
+  fullResults?: Record<string, unknown>[]
   createdAt: string
   updatedAt: string
   status: 'preview' | 'executing' | 'completed' | 'error'
@@ -174,7 +176,7 @@ export class StorageManager {
   static exportChatData(chatId?: string): string {
     try {
       const history = chatId 
-        ? [this.getChatById(chatId)].filter(Boolean)
+        ? [this.getChatById(chatId)].filter((chat): chat is ChatHistory => chat !== null)
         : this.getChatHistory()
       
       const exportData = history.map(chat => ({

@@ -1,6 +1,6 @@
 export class DownloadHelper {
   // CSVデータをダウンロード
-  static downloadCSV(data: any[], filename: string = 'results.csv'): void {
+  static downloadCSV(data: Record<string, unknown>[], filename: string = 'results.csv'): void {
     try {
       if (!data || data.length === 0) {
         throw new Error('データが空です')
@@ -17,7 +17,7 @@ export class DownloadHelper {
   }
 
   // JSONデータをダウンロード
-  static downloadJSON(data: any, filename: string = 'data.json'): void {
+  static downloadJSON(data: unknown, filename: string = 'data.json'): void {
     try {
       const jsonContent = JSON.stringify(data, null, 2)
       const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8;' })
@@ -42,7 +42,7 @@ export class DownloadHelper {
   }
 
   // 配列データをCSV形式に変換
-  private static convertToCSV(data: any[]): string {
+  private static convertToCSV(data: Record<string, unknown>[]): string {
     if (data.length === 0) return ''
 
     // ヘッダー行を取得
@@ -64,7 +64,7 @@ export class DownloadHelper {
   }
 
   // CSV値をエスケープ
-  private static escapeCsvValue(value: any): string {
+  private static escapeCsvValue(value: unknown): string {
     if (value === null || value === undefined) {
       return ''
     }
@@ -133,7 +133,7 @@ export class DownloadHelper {
   }
 
   // データの行数とサイズを取得
-  static getDataInfo(data: any[]): { rows: number; estimatedSize: string } {
+  static getDataInfo(data: Record<string, unknown>[]): { rows: number; estimatedSize: string } {
     const rows = data.length
     const jsonString = JSON.stringify(data)
     const estimatedBytes = new Blob([jsonString]).size
@@ -156,7 +156,7 @@ export class DownloadHelper {
   }
 
   // プレビュー用に先頭数行のCSVを生成
-  static generatePreviewCSV(data: any[], maxRows: number = 10): string {
+  static generatePreviewCSV(data: Record<string, unknown>[], maxRows: number = 10): string {
     if (!data || data.length === 0) return ''
     
     const previewData = data.slice(0, maxRows)

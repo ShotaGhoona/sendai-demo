@@ -27,7 +27,7 @@ export interface ExecutionStatus {
 
 // 結果表示関連
 export interface ResultDisplay {
-  data: any[]
+  data: Record<string, unknown>[]
   totalRows: number
   displayedRows: number
   columnInfo: ColumnInfo[]
@@ -124,7 +124,7 @@ export interface UserPreferences {
 }
 
 // API関連
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   error?: ErrorInfo
@@ -145,7 +145,7 @@ export interface CsvInfo {
 }
 
 // キャッシュ関連
-export interface CacheEntry<T = any> {
+export interface CacheEntry<T = unknown> {
   key: string
   data: T
   timestamp: string
@@ -163,7 +163,7 @@ export interface ValidationResult {
 
 // エクスポート関連
 export interface ExportData {
-  chatHistory: any[]
+  chatHistory: Record<string, unknown>[]
   userPreferences: UserPreferences
   statistics: UsageStats
   exportedAt: string

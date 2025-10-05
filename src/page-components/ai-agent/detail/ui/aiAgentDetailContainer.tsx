@@ -35,7 +35,7 @@ export function AiAgentDetailContainer({ chatId }: AiAgentDetailContainerProps) 
 
   useEffect(() => {
     loadChatData()
-  }, [chatId])
+  }, [chatId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadChatData = async () => {
     try {
@@ -137,7 +137,7 @@ export function AiAgentDetailContainer({ chatId }: AiAgentDetailContainerProps) 
     // TODO: 追加質問の処理は後で実装
   }
 
-  const renderTable = (data: any[], maxRows: number = 100) => {
+  const renderTable = (data: Record<string, unknown>[], maxRows: number = 100) => {
     if (!data || data.length === 0) return null
     
     const displayData = data.slice(0, maxRows)
