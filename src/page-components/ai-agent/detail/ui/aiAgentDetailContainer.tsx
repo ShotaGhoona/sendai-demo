@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Send, ArrowLeft, Download, Play, Loader2, CheckCircle, AlertCircle, Edit2, Check, X } from "lucide-react"
+import { Send, ArrowLeft, Download, Play, Loader2, CheckCircle, AlertCircle, Edit2, Check, X, ChevronDown, ChevronRight } from "lucide-react"
 import { Button } from "../../../../shared/ui-components/shadcnui/ui/button"
 import { Input } from "../../../../shared/ui-components/shadcnui/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../shared/ui-components/shadcnui/ui/card"
@@ -31,6 +31,7 @@ export function AiAgentDetailContainer({ chatId }: AiAgentDetailContainerProps) 
   const [showAiResponse, setShowAiResponse] = useState(false)
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editTitle, setEditTitle] = useState("")
+  const [showPreviewToggle, setShowPreviewToggle] = useState(false)
   
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -68,6 +69,18 @@ export function AiAgentDetailContainer({ chatId }: AiAgentDetailContainerProps) 
       } else {
         // 既存のチャットの場合は即座にAI応答を表示
         setShowAiResponse(true)
+        
+        // 既存のチャットで結果データがある場合は、queryResultを復元
+        if (storedChat.fullResults || storedChat.preview) {
+          const result = {
+            sql: storedChat.sql,
+            keywords: storedChat.keywords,
+            preview: storedChat.preview,
+            fullResults: storedChat.fullResults,
+            error: storedChat.error
+          }
+          setQueryResult(result)
+        }
       }
     } catch (error) {
       console.error('Failed to load chat data:', error)
@@ -282,14 +295,6 @@ export function AiAgentDetailContainer({ chatId }: AiAgentDetailContainerProps) 
               </Button>
             </div>
           )}
-          <div className="ml-auto flex items-center gap-2">
-            {chat.status === 'completed' && queryResult?.fullResults && (
-              <Button size="sm" onClick={handleDownloadCSV}>
-                <Download className="h-4 w-4 mr-2" />
-                CSVダウンロード
-              </Button>
-            )}
-          </div>
         </div>
       </div>
 
@@ -371,14 +376,38 @@ export function AiAgentDetailContainer({ chatId }: AiAgentDetailContainerProps) 
                     {/* プレビュー結果 */}
                     {chat.preview && chat.preview.length > 0 && (
                       <div className="space-y-4">
-                        <div>
-                          <h4 className="text-base font-medium mb-3">
-                            プレビュー結果 ({chat.preview.length}件表示)
-                          </h4>
-                          <div className="overflow-x-auto">
-                            {renderTable(chat.preview, 5)}
+                        {/* 実行結果がある場合はトグル表示 */}
+                        {chat.status === 'completed' && queryResult?.fullResults ? (
+                          <div>
+                            <Button
+                              variant="ghost"
+                              onClick={() => setShowPreviewToggle(!showPreviewToggle)}
+                              className="flex items-center gap-2 p-0 h-auto font-medium text-base"
+                            >
+                              {showPreviewToggle ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
+                              プレビュー結果 ({chat.preview.length}件)
+                            </Button>
+                            {showPreviewToggle && (
+                              <div className="mt-3 overflow-x-auto">
+                                {renderTable(chat.preview, 5)}
+                              </div>
+                            )}
                           </div>
-                        </div>
+                        ) : (
+                          /* 実行前は通常表示 */
+                          <div>
+                            <h4 className="text-base font-medium mb-3">
+                              プレビュー結果 ({chat.preview.length}件)
+                            </h4>
+                            <div className="overflow-x-auto">
+                              {renderTable(chat.preview, 5)}
+                            </div>
+                          </div>
+                        )}
                         
                         {/* 全件実行ボタン */}
                         {chat.status === 'preview' && (
@@ -401,21 +430,6 @@ export function AiAgentDetailContainer({ chatId }: AiAgentDetailContainerProps) 
                       </div>
                     )}
                     
-                    {/* 進行度表示 */}
-                    {isExecuting && (
-                      <Card>
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-3">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span className="text-sm font-medium">実行中...</span>
-                          </div>
-                          <Progress value={executionProgress} className="mt-3" />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {executionProgress}% 完了
-                          </p>
-                        </CardContent>
-                      </Card>
-                    )}
                     
                     {/* 全件結果 */}
                     {chat.status === 'completed' && queryResult?.fullResults && (
@@ -432,7 +446,7 @@ export function AiAgentDetailContainer({ chatId }: AiAgentDetailContainerProps) 
                         
                         {/* CSVダウンロードボタン */}
                         <div className="flex justify-center">
-                          <Button variant="outline" size="lg" className="w-full" onClick={handleDownloadCSV}>
+                          <Button size="lg" className="w-full" onClick={handleDownloadCSV}>
                             <Download className="h-4 w-4 mr-2" />
                             CSVダウンロード
                           </Button>
@@ -480,6 +494,26 @@ export function AiAgentDetailContainer({ chatId }: AiAgentDetailContainerProps) 
           </form>
         </div>
       </div>
+
+      {/* 進行度表示（トースト形式） */}
+      {isExecuting && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <Card className="shadow-lg border-l-4">
+            <CardContent className="p-4 w-80">
+              <div className="flex items-center gap-3">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">実行中...</span>
+                    <span className="text-xs text-muted-foreground">{executionProgress}%</span>
+                  </div>
+                  <Progress value={executionProgress} className="h-2" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
