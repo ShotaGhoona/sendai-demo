@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Send } from "lucide-react"
+import { Send, Trash2 } from "lucide-react"
 import { Button } from "@/shared/ui-components/shadcnui/ui/button"
 import { Input } from "@/shared/ui-components/shadcnui/ui/input"
 import Image from "next/image"
@@ -77,6 +77,14 @@ export function AiAgentContainer() {
     router.push(`/analysis/ai-agent/${chatId}`)
   }
 
+  const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
+    e.stopPropagation() // 親のクリックイベントを停止
+    StorageManager.deleteChatById(chatId)
+    // 履歴を再読み込み
+    const updatedHistory = StorageManager.getChatHistory()
+    setChatHistory(updatedHistory.slice(0, 10))
+  }
+
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -117,7 +125,7 @@ export function AiAgentContainer() {
                 {chatHistory.map((item) => (
                   <div 
                     key={item.id} 
-                    className="cursor-pointer transition-colors hover:bg-muted/50 p-3 rounded-lg border-b border-border/50"
+                    className="cursor-pointer transition-colors hover:bg-muted/50 p-3 rounded-lg border-b border-border/50 group"
                     onClick={() => handleHistoryClick(item.id)}
                   >
                     <div className="flex items-center justify-between">
@@ -126,8 +134,17 @@ export function AiAgentContainer() {
                           {item.title}
                         </h3>
                       </div>
-                      <div className="text-xs text-muted-foreground ml-4">
-                        {formatDate(item.updatedAt)}
+                      <div className="flex items-center gap-2">
+                        <div className="text-xs text-muted-foreground">
+                          {formatDate(item.updatedAt)}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handleDeleteChat(e, item.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
                     </div>
                   </div>
