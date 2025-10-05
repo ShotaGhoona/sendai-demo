@@ -1,25 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Send, Clock } from "lucide-react"
+import { Send } from "lucide-react"
 import { Button } from "@/shared/ui-components/shadcnui/ui/button"
 import { Input } from "@/shared/ui-components/shadcnui/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui-components/shadcnui/ui/card"
-import { Badge } from "@/shared/ui-components/shadcnui/ui/badge"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { v4 as uuidv4 } from "uuid"
 import { StorageManager, ChatHistory } from "../../shared/lib/storage-manager"
 import { QueryProcessor } from "../lib/query-processor"
 
-// 入力例
-const exampleQueries = [
-  "ワンピースの9月の売り上げを教えて",
-  "鬼滅の刃のフィギュアの販売数量を知りたい",
-  "ポケモンの関東地域での売上ランキングを表示して",
-  "夏の限定商品の平均価格はいくら？",
-  "バンダイ製品の年間売上を集計して"
-]
 
 export function AiAgentContainer() {
   const [inputValue, setInputValue] = useState("")
@@ -87,9 +77,6 @@ export function AiAgentContainer() {
     router.push(`/analysis/ai-agent/${chatId}`)
   }
 
-  const handleExampleClick = (example: string) => {
-    setInputValue(example)
-  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -99,7 +86,7 @@ export function AiAgentContainer() {
     const diffDays = Math.floor(diffHours / 24)
     
     if (diffHours < 1) {
-      return '今＂'
+      return '今'
     } else if (diffHours < 24) {
       return `${diffHours}時間前`
     } else if (diffDays < 7) {
@@ -109,17 +96,6 @@ export function AiAgentContainer() {
     }
   }
 
-  const getStatusBadge = (status: ChatHistory['status']) => {
-    const variants = {
-      preview: { variant: "outline" as const, text: "プレビュー" },
-      executing: { variant: "default" as const, text: "実行中" },
-      completed: { variant: "secondary" as const, text: "完了" },
-      error: { variant: "destructive" as const, text: "エラー" }
-    }
-    
-    const config = variants[status] || variants.preview
-    return <Badge variant={config.variant}>{config.text}</Badge>
-  }
 
   return (
     <div className="flex h-screen flex-col">
@@ -134,57 +110,28 @@ export function AiAgentContainer() {
         <div className="flex-1 px-6 py-6 overflow-y-auto">
           <div className="mx-auto max-w-5xl space-y-8">
             
-            {/* 入力例セクション */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">分析例</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {exampleQueries.map((example, index) => (
-                  <Card 
-                    key={index} 
-                    className="cursor-pointer transition-colors hover:bg-muted/30"
-                    onClick={() => handleExampleClick(example)}
-                  >
-                    <CardContent className="p-4">
-                      <p className="text-sm text-muted-foreground">{example}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
             
             {/* 履歴セクション */}
             {chatHistory.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-xl font-semibold">最近の分析</h2>
-                </div>
-                <div className="grid grid-cols-1 gap-4">
-                  {chatHistory.map((item) => (
-                    <Card 
-                      key={item.id} 
-                      className="cursor-pointer transition-colors hover:bg-muted/30"
-                      onClick={() => handleHistoryClick(item.id)}
-                    >
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <div className="space-y-1 flex-1">
-                            <CardTitle className="text-base font-medium">{item.title}</CardTitle>
-                            <CardDescription className="text-sm text-muted-foreground line-clamp-2">
-                              {item.query}
-                            </CardDescription>
-                          </div>
-                          <div className="flex flex-col items-end gap-2 ml-4">
-                            {getStatusBadge(item.status)}
-                            <span className="text-xs text-muted-foreground">
-                              {formatDate(item.updatedAt)}
-                            </span>
-                          </div>
-                        </div>
-                      </CardHeader>
-                    </Card>
-                  ))}
-                </div>
+              <div className="space-y-3">
+                {chatHistory.map((item) => (
+                  <div 
+                    key={item.id} 
+                    className="cursor-pointer transition-colors hover:bg-muted/50 p-3 rounded-lg border-b border-border/50"
+                    onClick={() => handleHistoryClick(item.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-medium text-foreground truncate">
+                          {item.title}
+                        </h3>
+                      </div>
+                      <div className="text-xs text-muted-foreground ml-4">
+                        {formatDate(item.updatedAt)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>

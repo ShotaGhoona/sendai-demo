@@ -89,23 +89,26 @@ export class SqlGenerator {
       conditions.push("is_limited = 'TRUE'")
     }
     
-    // SQL文を組み立て
-    let sql = `${selectClause} FROM sales_data`
+    // SQL文を組み立て（改行で整形）
+    let sql = `${selectClause}\nFROM sales_data`
     
     if (conditions.length > 0) {
-      sql += ` WHERE ${conditions.join(' AND ')}`
+      sql += `\nWHERE ${conditions[0]}`
+      for (let i = 1; i < conditions.length; i++) {
+        sql += `\n  AND ${conditions[i]}`
+      }
     }
     
     if (groupByClause) {
-      sql += ` ${groupByClause}`
+      sql += `\n${groupByClause}`
     }
     
     if (orderByClause) {
-      sql += ` ${orderByClause}`
+      sql += `\n${orderByClause}`
     }
     
     if (limitClause) {
-      sql += ` ${limitClause}`
+      sql += `\n${limitClause}`
     }
     
     return sql
