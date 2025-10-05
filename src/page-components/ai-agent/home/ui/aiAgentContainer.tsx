@@ -41,10 +41,8 @@ export function AiAgentContainer() {
       // 新しいチャットIDを生成
       const chatId = uuidv4()
       
-      // 基本的なタイトルを生成（最初の30文字程度）
-      const title = inputValue.length > 30 
-        ? inputValue.substring(0, 30) + "..."
-        : inputValue
+      // 初期タイトルは「Untitled」
+      const title = "Untitled"
       
       // チャット履歴を作成
       const newChat: ChatHistory = {

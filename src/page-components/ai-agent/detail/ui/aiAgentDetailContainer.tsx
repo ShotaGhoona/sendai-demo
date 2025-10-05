@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Send, ArrowLeft, Download, Play, Loader2, CheckCircle, AlertCircle } from "lucide-react"
+import { Send, ArrowLeft, Download, Play, Loader2, CheckCircle, AlertCircle, Edit2, Check, X } from "lucide-react"
 import { Button } from "../../../../shared/ui-components/shadcnui/ui/button"
 import { Input } from "../../../../shared/ui-components/shadcnui/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../shared/ui-components/shadcnui/ui/card"
@@ -29,6 +29,8 @@ export function AiAgentDetailContainer({ chatId }: AiAgentDetailContainerProps) 
   const [isExecuting, setIsExecuting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [showAiResponse, setShowAiResponse] = useState(false)
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
+  const [editTitle, setEditTitle] = useState("")
   
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -149,6 +151,31 @@ export function AiAgentDetailContainer({ chatId }: AiAgentDetailContainerProps) 
     // TODO: 追加質問の処理は後で実装
   }
 
+  const handleStartEdit = () => {
+    if (!chat) return
+    setEditTitle(chat.title)
+    setIsEditingTitle(true)
+  }
+
+  const handleSaveTitle = () => {
+    if (!chat || !editTitle.trim()) return
+    
+    const updatedChat = {
+      ...chat,
+      title: editTitle.trim(),
+      updatedAt: new Date().toISOString()
+    }
+    
+    StorageManager.saveChatHistory(updatedChat)
+    setChat(updatedChat)
+    setIsEditingTitle(false)
+  }
+
+  const handleCancelEdit = () => {
+    setIsEditingTitle(false)
+    setEditTitle("")
+  }
+
   const renderTable = (data: Record<string, unknown>[], maxRows: number = 100) => {
     if (!data || data.length === 0) return null
     
@@ -156,7 +183,7 @@ export function AiAgentDetailContainer({ chatId }: AiAgentDetailContainerProps) 
     const columns = Object.keys(data[0])
     
     return (
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-96 overflow-y-auto border rounded-lg">
         <Table >
           <TableHeader>
             <TableRow>
@@ -223,10 +250,41 @@ export function AiAgentDetailContainer({ chatId }: AiAgentDetailContainerProps) 
               戻る
             </Button>
           </Link>
-          <h1 className="text-lg font-semibold">{chat.title}</h1>
+          {isEditingTitle ? (
+            <div className="flex items-center gap-2">
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="text-lg font-semibold h-8"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSaveTitle()
+                  } else if (e.key === 'Escape') {
+                    handleCancelEdit()
+                  }
+                }}
+                autoFocus
+              />
+              <Button variant="ghost" size="sm" onClick={handleSaveTitle}>
+                <Check className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleCancelEdit}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-semibold cursor-pointer hover:text-primary" onClick={handleStartEdit}>
+                {chat.title}
+              </h1>
+              <Button variant="ghost" size="sm" onClick={handleStartEdit}>
+                <Edit2 className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
           <div className="ml-auto flex items-center gap-2">
             {chat.status === 'completed' && queryResult?.fullResults && (
-              <Button variant="outline" size="sm" onClick={handleDownloadCSV}>
+              <Button size="sm" onClick={handleDownloadCSV}>
                 <Download className="h-4 w-4 mr-2" />
                 CSVダウンロード
               </Button>
@@ -258,7 +316,19 @@ export function AiAgentDetailContainer({ chatId }: AiAgentDetailContainerProps) 
           {/* AI応答（左側） */}
           {showAiResponse && (
             <div className="flex gap-4">
+              <div className="flex-shrink-0">
+                <Image
+                  src="/default_pero_640x360.png"
+                  alt="AI Assistant"
+                  width={32}
+                  height={32}
+                  className="rounded-full object-cover"
+                />
+              </div>
               <div className="flex-1 min-w-0 max-w-[85%] space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-medium">TREASURE AI</span>
+                </div>
                 {!chat.sql && !chat.error && (
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
