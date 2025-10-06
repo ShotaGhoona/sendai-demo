@@ -2,21 +2,21 @@ import { BrandPattern, CategoryPattern, KeywordPattern } from './types'
 
 // ブランドパターン
 export const BRAND_PATTERNS: BrandPattern[] = [
-  { name: 'ワンピース', aliases: ['ワンピ', 'ONE PIECE'] },
-  { name: '鬼滅の刃', aliases: ['きめつ', '鬼滅', 'きめつのやいば'] },
-  { name: 'ドラゴンボール', aliases: ['ドラゴンボール', 'DB', 'ドラボ'] },
-  { name: 'ナルト', aliases: ['NARUTO', 'なると'] },
-  { name: '進撃の巨人', aliases: ['進撃', 'しんげき'] },
-  { name: 'ポケモン', aliases: ['ポケットモンスター', 'Pokemon'] },
-  { name: 'ドラえもん' },
-  { name: 'アンパンマン' },
-  { name: 'セーラームーン' },
-  { name: 'エヴァンゲリオン', aliases: ['エヴァ', 'EVA'] },
-  { name: 'ジョジョの奇妙な冒険', aliases: ['ジョジョ', 'JOJO'] },
-  { name: 'ハンターハンター', aliases: ['ハンター', 'HUNTER×HUNTER'] },
-  { name: 'スパイファミリー', aliases: ['スパファミ'] },
-  { name: '呪術廻戦', aliases: ['呪術', 'じゅじゅつ'] },
-  { name: 'チェンソーマン', aliases: ['チェンソー'] }
+  { name: 'ルフィ', aliases: ['モンキー・D・ルフィ', 'Luffy'] },
+  { name: 'ゾロ', aliases: ['ロロノア・ゾロ', 'Zoro'] },
+  { name: 'ナミ', aliases: ['Nami'] },
+  { name: 'ウソップ', aliases: ['Usopp'] },
+  { name: 'サンジ', aliases: ['Sanji'] },
+  { name: 'チョッパー', aliases: ['トニートニー・チョッパー', 'Chopper'] },
+  { name: 'ロビン', aliases: ['ニコ・ロビン', 'Robin'] },
+  { name: 'フランキー', aliases: ['Franky'] },
+  { name: 'ブルック', aliases: ['Brook'] },
+  { name: 'ジンベエ', aliases: ['Jinbe'] },
+  { name: 'エース', aliases: ['ポートガス・D・エース', 'Ace'] },
+  { name: 'シャンクス', aliases: ['赤髪のシャンクス', 'Shanks'] },
+  { name: 'ロー', aliases: ['トラファルガー・ロー', 'Law'] },
+  { name: 'ハンコック', aliases: ['ボア・ハンコック', 'Hancock'] },
+  { name: 'バギー', aliases: ['道化のバギー', 'Buggy'] }
 ]
 
 // カテゴリパターン
