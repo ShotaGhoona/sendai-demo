@@ -127,8 +127,25 @@ export class CsvExecutor {
     return data.filter(row => {
       // AND条件で分割
       const andConditions = conditions.split(/\s+AND\s+/i)
-      
+
       return andConditions.every(condition => {
+        // 日付範囲条件の解析 (sale_date >= '2024-01-01' AND sale_date <= '2024-12-31')
+        const dateRangeMatch = condition.match(/(\w+)\s*(>=|<=)\s*'([^']+)'/i)
+        if (dateRangeMatch) {
+          const [, column, operator, value] = dateRangeMatch
+          const dateValue = row[column]
+          if (typeof dateValue === 'string' || typeof dateValue === 'number' || dateValue instanceof Date) {
+            const rowDate = new Date(dateValue)
+            const compareDate = new Date(value)
+            if (operator === '>=') {
+              return rowDate >= compareDate
+            } else if (operator === '<=') {
+              return rowDate <= compareDate
+            }
+          }
+          return false
+        }
+
         // 等価条件の解析 (column = 'value')
         const equalMatch = condition.match(/(\w+)\s*=\s*'([^']+)'/i)
         if (equalMatch) {
@@ -182,7 +199,24 @@ export class CsvExecutor {
 
     // データをグループ化
     data.forEach(row => {
-      const groupKey = groupFields.map(field => row[field.trim()]).join('|')
+      const groupKey = groupFields.map(field => {
+        const fieldName = field.trim()
+        // DATE(sale_date)の場合
+        if (fieldName.startsWith('DATE(')) {
+          const columnMatch = fieldName.match(/DATE\((\w+)\)/i)
+          if (columnMatch) {
+            const column = columnMatch[1]
+            const dateValue = row[column]
+            if (dateValue) {
+              const date = new Date(dateValue as string)
+              return date.toISOString().split('T')[0] // YYYY-MM-DD形式
+            }
+          }
+          return ''
+        }
+        return row[fieldName]
+      }).join('|')
+
       if (!groups[groupKey]) {
         groups[groupKey] = []
       }
@@ -196,7 +230,16 @@ export class CsvExecutor {
 
       // グループフィールドを設定
       groupFields.forEach((field, index) => {
-        resultRow[field.trim()] = groupValues[index]
+        const fieldName = field.trim()
+        // DATE(sale_date) as dateの場合
+        if (fieldName.includes(' as ')) {
+          const [, alias] = fieldName.split(' as ')
+          resultRow[alias.trim()] = groupValues[index]
+        } else if (fieldName.startsWith('DATE(')) {
+          resultRow.date = groupValues[index]
+        } else {
+          resultRow[fieldName] = groupValues[index]
+        }
       })
 
       // 集計関数を適用

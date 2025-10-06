@@ -7,17 +7,62 @@ export class SqlGenerator {
     let groupByClause = ''
     let orderByClause = ''
     let limitClause = ''
-    
+
+    // 日付範囲の条件を追加
+    if (keywords.dateRange && keywords.dateRange.type === 'relative') {
+      const { startDays, endDays } = keywords.dateRange
+      const today = new Date()
+      const startDate = new Date(today)
+      startDate.setDate(today.getDate() - (startDays || 0))
+      const endDate = new Date(today)
+      endDate.setDate(today.getDate() - (endDays || 0))
+
+      const startDateStr = startDate.toISOString().split('T')[0]
+      const endDateStr = endDate.toISOString().split('T')[0]
+
+      conditions.push(`sale_date >= '${startDateStr}' AND sale_date <= '${endDateStr}'`)
+    }
+
     // SELECT句を分析タイプに応じて生成
     switch (keywords.analysisType) {
+      case 'trend':
+        // 時系列分析の場合
+        const trendGroupFields = []
+        if (keywords.groupBy && keywords.groupBy.length > 0) {
+          for (const group of keywords.groupBy) {
+            if (group === 'store') trendGroupFields.push('store_name')
+            else if (group === 'date') trendGroupFields.push('DATE(sale_date) as date')
+            else if (group === 'brand') trendGroupFields.push('brand')
+            else if (group === 'category') trendGroupFields.push('category')
+          }
+        }
+        selectClause = `SELECT ${trendGroupFields.join(', ')}, SUM(sale_price * quantity) as total_sales, SUM(quantity) as total_quantity`
+        groupByClause = `GROUP BY ${trendGroupFields.map(f => f.includes(' as ') ? f.split(' as ')[0] : f).join(', ')}`
+        orderByClause = trendGroupFields.includes('DATE(sale_date) as date')
+          ? 'ORDER BY date ASC'
+          : 'ORDER BY total_sales DESC'
+        break
+
       case 'sales':
-        if (keywords.brand || keywords.category || keywords.region || keywords.store) {
+        // groupByが指定されている場合はそれを優先
+        if (keywords.groupBy && keywords.groupBy.length > 0) {
+          const salesGroupFields = []
+          for (const group of keywords.groupBy) {
+            if (group === 'store') salesGroupFields.push('store_name')
+            else if (group === 'date') salesGroupFields.push('DATE(sale_date) as date')
+            else if (group === 'brand') salesGroupFields.push('brand')
+            else if (group === 'category') salesGroupFields.push('category')
+          }
+          selectClause = `SELECT ${salesGroupFields.join(', ')}, SUM(sale_price * quantity) as total_sales`
+          groupByClause = `GROUP BY ${salesGroupFields.map(f => f.includes(' as ') ? f.split(' as ')[0] : f).join(', ')}`
+          orderByClause = 'ORDER BY total_sales DESC'
+        } else if (keywords.brand || keywords.category || keywords.region || keywords.store) {
           const groupFields = []
           if (keywords.brand) groupFields.push('brand')
           if (keywords.category) groupFields.push('category')
           if (keywords.region) groupFields.push('region')
           if (keywords.store) groupFields.push('store_name')
-          
+
           selectClause = `SELECT ${groupFields.join(', ')}, SUM(sale_price * quantity) as total_sales`
           groupByClause = `GROUP BY ${groupFields.join(', ')}`
           orderByClause = 'ORDER BY total_sales DESC'
@@ -27,10 +72,18 @@ export class SqlGenerator {
         break
         
       case 'ranking':
-        selectClause = 'SELECT product_name, brand, SUM(sale_price * quantity) as total_sales'
-        groupByClause = 'GROUP BY product_name, brand'
-        orderByClause = 'ORDER BY total_sales DESC'
-        limitClause = 'LIMIT 10'
+        // groupByが店舗ごとの場合
+        if (keywords.groupBy && keywords.groupBy.includes('store')) {
+          selectClause = 'SELECT store_name, SUM(sale_price * quantity) as total_sales'
+          groupByClause = 'GROUP BY store_name'
+          orderByClause = 'ORDER BY total_sales DESC'
+          limitClause = 'LIMIT 10'
+        } else {
+          selectClause = 'SELECT product_name, brand, SUM(sale_price * quantity) as total_sales'
+          groupByClause = 'GROUP BY product_name, brand'
+          orderByClause = 'ORDER BY total_sales DESC'
+          limitClause = 'LIMIT 10'
+        }
         break
         
       case 'count':
@@ -150,6 +203,9 @@ export class SqlGenerator {
         break
       case 'average':
         parts.push('平均価格を算出')
+        break
+      case 'trend':
+        parts.push('売上推移を分析')
         break
     }
     

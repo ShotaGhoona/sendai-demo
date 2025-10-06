@@ -6,7 +6,10 @@ import {
   REGION_PATTERNS,
   STORE_PATTERNS,
   MANUFACTURER_PATTERNS,
-  ANALYSIS_PATTERNS
+  ANALYSIS_PATTERNS,
+  DATE_RANGE_PATTERNS,
+  GROUP_BY_PATTERNS,
+  TIME_SERIES_PATTERNS
 } from '../model/patterns'
 
 export class KeywordExtractor {
@@ -105,7 +108,47 @@ export class KeywordExtractor {
     if (!keywords.analysisType) {
       keywords.analysisType = 'sales' // デフォルトは売上分析
     }
-    
+
+    // 日付範囲検出
+    for (const rangePattern of DATE_RANGE_PATTERNS) {
+      if (input.includes(rangePattern.keyword)) {
+        keywords.dateRange = {
+          type: 'relative',
+          value: rangePattern.keyword,
+          startDays: rangePattern.startDays,
+          endDays: rangePattern.endDays
+        }
+        keywords.timeDisplay = rangePattern.display
+        break
+      }
+    }
+
+    // グループ化検出
+    keywords.groupBy = []
+    for (const [groupType, patterns] of Object.entries(GROUP_BY_PATTERNS)) {
+      for (const pattern of patterns) {
+        if (input.includes(pattern)) {
+          keywords.groupBy.push(groupType as 'store' | 'date' | 'brand' | 'category')
+          break
+        }
+      }
+    }
+
+    // 時系列分析検出
+    for (const pattern of TIME_SERIES_PATTERNS) {
+      if (input.includes(pattern)) {
+        keywords.timeSeries = true
+        if (!keywords.groupBy.includes('date')) {
+          keywords.groupBy.push('date')
+        }
+        // 時系列分析の場合、分析タイプをtrendに変更
+        if (keywords.analysisType === 'sales') {
+          keywords.analysisType = 'trend'
+        }
+        break
+      }
+    }
+
     return keywords
   }
   
@@ -131,7 +174,8 @@ export class KeywordExtractor {
       'sales': '売上分析',
       'ranking': 'ランキング分析',
       'count': '数量分析',
-      'average': '平均分析'
+      'average': '平均分析',
+      'trend': '推移分析'
     }[keywords.analysisType || 'sales']
     
     if (parts.length === 0) {

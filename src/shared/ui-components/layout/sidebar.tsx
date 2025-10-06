@@ -99,7 +99,7 @@ export function AppSidebar() {
             <BarChart3 className="h-5 w-5 text-red-500" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-white">SendAI</h1>
+            <h1 className="text-lg font-semibold text-white">TREASURE</h1>
             <p className="text-xs text-white/80">システム</p>
           </div>
         </div>

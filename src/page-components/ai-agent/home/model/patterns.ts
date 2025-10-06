@@ -2,6 +2,7 @@ import { BrandPattern, CategoryPattern, KeywordPattern } from './types'
 
 // ブランドパターン
 export const BRAND_PATTERNS: BrandPattern[] = [
+  // ワンピース
   { name: 'ルフィ', aliases: ['モンキー・D・ルフィ', 'Luffy'] },
   { name: 'ゾロ', aliases: ['ロロノア・ゾロ', 'Zoro'] },
   { name: 'ナミ', aliases: ['Nami'] },
@@ -16,7 +17,34 @@ export const BRAND_PATTERNS: BrandPattern[] = [
   { name: 'シャンクス', aliases: ['赤髪のシャンクス', 'Shanks'] },
   { name: 'ロー', aliases: ['トラファルガー・ロー', 'Law'] },
   { name: 'ハンコック', aliases: ['ボア・ハンコック', 'Hancock'] },
-  { name: 'バギー', aliases: ['道化のバギー', 'Buggy'] }
+  { name: 'バギー', aliases: ['道化のバギー', 'Buggy'] },
+  // プリキュア
+  { name: 'キュアブラック', aliases: ['Cure Black'] },
+  { name: 'キュアホワイト', aliases: ['Cure White'] },
+  { name: 'キュアブルーム', aliases: ['Cure Bloom'] },
+  { name: 'キュアイーグレット', aliases: ['Cure Egret'] },
+  { name: 'キュアドリーム', aliases: ['Cure Dream'] },
+  { name: 'キュアルージュ', aliases: ['Cure Rouge'] },
+  { name: 'キュアレモネード', aliases: ['Cure Lemonade'] },
+  { name: 'キュアミント', aliases: ['Cure Mint'] },
+  { name: 'キュアアクア', aliases: ['Cure Aqua'] },
+  { name: 'キュアピーチ', aliases: ['Cure Peach'] },
+  { name: 'キュアベリー', aliases: ['Cure Berry'] },
+  { name: 'キュアパイン', aliases: ['Cure Pine'] },
+  { name: 'キュアパッション', aliases: ['Cure Passion'] },
+  { name: 'キュアブロッサム', aliases: ['Cure Blossom'] },
+  { name: 'キュアマリン', aliases: ['Cure Marine'] },
+  // セーラームーン
+  { name: 'セーラームーン', aliases: ['うさぎ', 'Sailor Moon'] },
+  { name: 'セーラーマーキュリー', aliases: ['亜美', 'Sailor Mercury'] },
+  { name: 'セーラーマーズ', aliases: ['レイ', 'Sailor Mars'] },
+  { name: 'セーラージュピター', aliases: ['まこと', 'Sailor Jupiter'] },
+  { name: 'セーラーヴィーナス', aliases: ['美奈子', 'Sailor Venus'] },
+  { name: 'セーラーウラヌス', aliases: ['はるか', 'Sailor Uranus'] },
+  { name: 'セーラーネプチューン', aliases: ['みちる', 'Sailor Neptune'] },
+  { name: 'セーラープルート', aliases: ['せつな', 'Sailor Pluto'] },
+  { name: 'セーラーサターン', aliases: ['ほたる', 'Sailor Saturn'] },
+  { name: 'タキシード仮面', aliases: ['まもる', 'Tuxedo Mask'] }
 ]
 
 // カテゴリパターン
@@ -76,5 +104,31 @@ export const ANALYSIS_PATTERNS = {
   sales: ['売上', '売り上げ', '売上高', '販売額', 'sales'],
   ranking: ['ランキング', '順位', 'トップ', '上位', 'ranking'],
   count: ['数量', '個数', '売れた数', '販売数', 'count'],
-  average: ['平均', '平均価格', 'average', 'avg']
+  average: ['平均', '平均価格', 'average', 'avg'],
+  trend: ['推移', '傾向', 'トレンド', '変化', 'trend']
 }
+
+// 日付範囲パターン
+export const DATE_RANGE_PATTERNS = [
+  { keyword: '本日から2ヶ月前', startDays: 60, endDays: 0, display: '本日から2ヶ月前まで' },
+  { keyword: '2ヶ月前', startDays: 60, endDays: 0, display: '2ヶ月前から' },
+  { keyword: '直近1年', startDays: 365, endDays: 0, display: '直近1年' },
+  { keyword: '直近3ヶ月', startDays: 90, endDays: 0, display: '直近3ヶ月' },
+  { keyword: '直近6ヶ月', startDays: 180, endDays: 0, display: '直近6ヶ月' },
+  { keyword: '今月', startDays: 30, endDays: 0, display: '今月' },
+  { keyword: '先月', startDays: 60, endDays: 30, display: '先月' }
+]
+
+// グループ化パターン
+export const GROUP_BY_PATTERNS = {
+  store: ['店舗ごと', '各店舗', '店舗別', 'by store'],
+  date: ['日毎', '日ごと', '日別', '毎日', 'daily', 'by date'],
+  brand: ['ブランドごと', '各ブランド', 'ブランド別'],
+  category: ['カテゴリごと', '各カテゴリ', 'カテゴリ別'],
+  title: ['タイトルごと', '各タイトル', 'タイトル別']
+}
+
+// 時系列分析パターン
+export const TIME_SERIES_PATTERNS = [
+  '推移', 'トレンド', '変化', '時系列', '経過'
+]
